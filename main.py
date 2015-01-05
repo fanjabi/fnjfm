@@ -1,10 +1,14 @@
 import math
 import random
+import array
 
 class Player:
 	good_attribute_weight = 75
 	other_attribute_weight = 25
 	attr_max = 20
+	sftimes = 3
+	absw = [25, 15, 10, 8, 6, 4, 3, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0]
+	abswl = [15, 10, 9, 8, 5, 4, 3, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0]
 	all_attributes = ['heading', 'jumping', 'tackling', 'marking', 'passing']
 	good_attributes = {
 		'fw' : ['heading', 'jumping'],
@@ -26,6 +30,8 @@ class Player:
 		self.attributes = {}
 		self.__good_attributes = self.good_attributes[self.pos]
 		self.__other_attributes = []
+		self.__attrwa = array.array('i')
+		self.__attrwal = array.array('i')
 		for a in self.all_attributes:
 			if a in self.__good_attributes:
 				self.fattributes[a] = self.get_random()
@@ -36,22 +42,25 @@ class Player:
 
 	
 	def get_random(self):
-		while True:
-			randy = random.random()
-			randx = random.random() * self.attr_max
-			if randy <= self.f(randx):
-				if randx < 0.5:
-					randx = 0.5
-				return randx
+		self.__init_attrwa()
+		summ = 0
+		for i in range(self.sftimes):
+			summ = summ + random.choice(self.__attrwa)
+		return summ / self.sftimes
+
+	def __init_attrwa(self):
+		if len(self.__attrwa) > 0:
+			return
+		for i in range(1, self.attr_max + 1):
+			self.__attrwa.extend([i] * self.absw[abs(i-self.potential)])
+			self.__attrwal.extend([i] * self.abswl[abs(i-self.potential)])
 
 	def get_random_low(self):
-		while True:
-			randy = random.random()
-			randx = random.random() * self.attr_max
-			if randy <= self.flow(randx):
-				if randx < 0.5:
-					randx = 0.5
-				return randx
+		self.__init_attrwa()
+		summ = 0
+		for i in range(self.sftimes):
+			summ = summ + random.choice(self.__attrwal)
+		return summ / self.sftimes
 
 	def get_ability(self):
 		gasum = 0
@@ -66,8 +75,6 @@ class Player:
 			oalen = oalen + 1
 
 		return round( ( ( gasum * self.good_attribute_weight ) / ( galen * self.attr_max ) ) + ( ( oasum * self.other_attribute_weight ) / ( oalen * self.attr_max ) ) )
-
-
 
 	def _get_ability_(self):
 		return ( self.good_attribute_weight * sum(self.__good_attributes) ) / ( len(self.__good_attributes) * self.attr_max ) + ( self.other_attribute_weight * sum(self.__other_attributes) ) / ( len(self.__other_attributes) * self.attr_max )
@@ -102,7 +109,7 @@ class Team:
 			ps = ps + p.get_ability()
 		return round(ps/pc)
 
-ludogorets = Team('Ludogorets', 20)
+ludogorets = Team('Ludogorets', 5)
 
 ludogorets.print_info()
 
